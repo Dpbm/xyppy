@@ -58,6 +58,12 @@ class Screen(object):
         self.wrapBuf = []
         self.haveNotScrolled = True
 
+    def get_output(self):
+        return '\n'.join([
+                "".join([char.char for char in line])
+                for line in self.textBuf
+            ])
+
     def make_screen_buf(self):
         return [self.make_screen_line() for i in range(self.env.hdr.screen_height_units)]
 

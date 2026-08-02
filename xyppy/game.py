@@ -6,6 +6,7 @@ from . import zenv, blorb, ops, term
 def run_game(
         args,
         callback_output=lambda x:0,
+        callback_input=lambda x:0,
 ):
     path = args.STORY_FILE_OR_URL
     try:

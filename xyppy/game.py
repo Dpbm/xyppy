@@ -28,15 +28,35 @@ def run_game(
     else:
         err('unknown game vm type: {}'.format(repr(vm_type)))
 
-def start_zmach(mem, args) -> zenv.Env:
-    env = zenv.Env(mem, args)
-    if env.hdr.version not in [1,2,3,4,5,7,8]:
-        err('unsupported z-machine version: '+str(env.hdr.version))
+def start_zmach(args) -> zenv.Env:
+    path = args.STORY_FILE_OR_URL
+    try:
+        with open(path, 'rb') as f:
+            mem = f.read()
+    except IOError as e:
+        err('could not load file:', e)
 
-    term.init()
-    env.screen.first_draw()
-    ops.setup_opcodes(env)
-    return env
+    vm_type = b'ZCOD'
+
+    if blorb.is_blorb(mem):
+        codeChunk = blorb.get_code_chunk(mem)
+        if not codeChunk:
+            err('no runnable game code found in blorb file')
+        mem = codeChunk.data
+        vm_type = codeChunk.name
+
+    if vm_type == b'ZCOD':
+        env = zenv.Env(mem, args)
+        if env.hdr.version not in [1,2,3,4,5,7,8]:
+            err('unsupported z-machine version: '+str(env.hdr.version))
+
+        term.init()
+        env.screen.first_draw()
+        ops.setup_opcodes(env)
+        return env
+    else:
+        err('unknown game vm type: {}'.format(repr(vm_type)))
+        return None
 
 def step(env, callback_output, callback_input):
     zenv.step(env)

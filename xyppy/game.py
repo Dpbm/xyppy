@@ -1,5 +1,4 @@
 from __future__ import print_function
-
 from .debug import err
 from . import zenv, blorb, ops, term
 
@@ -28,6 +27,20 @@ def run_game(
         run_zmach(mem, args, callback_output, callback_input)
     else:
         err('unknown game vm type: {}'.format(repr(vm_type)))
+
+def start_zmach(mem, args) -> zenv.Env:
+    env = zenv.Env(mem, args)
+    if env.hdr.version not in [1,2,3,4,5,7,8]:
+        err('unsupported z-machine version: '+str(env.hdr.version))
+
+    term.init()
+    env.screen.first_draw()
+    ops.setup_opcodes(env)
+    return env
+
+def step(env, callback_output, callback_input):
+    zenv.step(env)
+    callback_output(env.screen.get_output())
 
 
 def run_zmach(mem, args, callback_output, callback_input):

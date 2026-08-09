@@ -213,7 +213,7 @@ class Env:
         # only the bottom two bits of flags2 survive reset
         # (transcribe to printer & fixed pitch font)
         bits_to_save = self.hdr.flags2 & 3
-        self.__init__(self.orig_mem, self.options)
+        self.__init__(self.orig_mem, self.options, self.input_callback)
         self.hdr.flags2 &= ~3
         self.hdr.flags2 |= bits_to_save
     def quit(self):

@@ -9,6 +9,7 @@ from xyppy.debug import DBG, warn, err
 from xyppy.zmath import to_signed_word
 
 from xyppy.ops_impl_compat import *
+from xyppy.term import stored_chars
 
 import xyppy.quetzal as quetzal
 
@@ -704,12 +705,13 @@ def handle_read(env, text_buffer, parse_buffer, time=0, routine=0):
         if DBG:
             err('interrupts requested but not impl\'d yet!')
     
-    user_input = ""
     if(env.input_callback is not None):
-        user_input = env.input_callback(env.screen.get_output())
+        inp = env.input_callback(env.screen.get_output()).decode("utf-8") + "\n"
+        for char in inp:
+            stored_chars.append(char)
 
-    #prefilled = get_text_buffer_as_str(env, text_buffer)
-    #user_input = ascii_to_zscii(env.screen.get_line_of_input(prompt='', prefilled=prefilled).lower())
+    prefilled = get_text_buffer_as_str(env, text_buffer)
+    user_input = ascii_to_zscii(env.screen.get_line_of_input(prompt='', prefilled=prefilled).lower())
 
     fill_text_buffer(env, user_input, text_buffer)
 

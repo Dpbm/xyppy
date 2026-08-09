@@ -141,7 +141,7 @@ def set_standard_flags(env):
         env.mem[hdr.hdr_ext_tab_base + 4] = 0
 
 class Env:
-    def __init__(self, mem, options):
+    def __init__(self, mem, options, input_callback=None):
         self.orig_mem = mem
         self.mem = array('B', mem)
 
@@ -157,6 +157,8 @@ class Env:
 
         self.fg_color = self.hdr.default_fg_color
         self.bg_color = self.hdr.default_bg_color
+
+        self._input_callback = input_callback
 
         # to make quetzal saves easier
         self.last_pc_branch_var = None
@@ -184,6 +186,10 @@ class Env:
 
         self.current_window = 0
         self.top_window_height = 0
+
+    @property
+    def input_callback(self):
+        return self._input_callback
 
     def fixup_after_restore(self):
         # make sure our standard flags are set after load
@@ -215,7 +221,6 @@ class Env:
         sys.exit()
 
 def step(env):
-
     pc, icache = env.pc, env.icache
     if pc in icache:
         op, opinfo, env.pc = icache[pc]

@@ -2,11 +2,7 @@ from __future__ import print_function
 from .debug import err
 from . import zenv, blorb, ops, term
 
-def run_game(
-        args,
-        callback_output=lambda x:0,
-        callback_input=lambda x:0,
-):
+def run_game(args):
     path = args.STORY_FILE_OR_URL
     try:
         with open(path, 'rb') as f:
@@ -24,11 +20,11 @@ def run_game(
         vm_type = codeChunk.name
 
     if vm_type == b'ZCOD':
-        run_zmach(mem, args, callback_output, callback_input)
+        run_zmach(mem, args)
     else:
         err('unknown game vm type: {}'.format(repr(vm_type)))
 
-def start_zmach(args) -> zenv.Env:
+def start_zmach(args,callback_input) -> zenv.Env:
     path = args.STORY_FILE_OR_URL
     try:
         with open(path, 'rb') as f:
@@ -46,7 +42,7 @@ def start_zmach(args) -> zenv.Env:
         vm_type = codeChunk.name
 
     if vm_type == b'ZCOD':
-        env = zenv.Env(mem, args)
+        env = zenv.Env(mem, args, input_callback=callback_input)
         if env.hdr.version not in [1,2,3,4,5,7,8]:
             err('unsupported z-machine version: '+str(env.hdr.version))
 
@@ -58,12 +54,11 @@ def start_zmach(args) -> zenv.Env:
         err('unknown game vm type: {}'.format(repr(vm_type)))
         return None
 
-def step(env, callback_output, callback_input):
+def step(env):
     zenv.step(env)
-    callback_output(env.screen.get_output())
 
 
-def run_zmach(mem, args, callback_output, callback_input):
+def run_zmach(mem, args):
     env = zenv.Env(mem, args)
     if env.hdr.version not in [1,2,3,4,5,7,8]:
         err('unsupported z-machine version: '+str(env.hdr.version))
@@ -74,7 +69,6 @@ def run_zmach(mem, args, callback_output, callback_input):
     try:
         while True:
             zenv.step(env)
-            callback_output(env.screen.get_output())
     except KeyboardInterrupt:
         pass
 
